@@ -124,25 +124,32 @@ ROTable <- function(df, target, probability)
 
   mydata.DT = data.table(tmp) ## Converting the data frame to data table object
   ## Creating Aggregation and Group By similar to as in SQL
+  Target_Rate = sum(mydata.DT$Target)/nrow(mydata.DT)
   rank <- mydata.DT[, list(
-    min_prob = min(prob),
-    max_prob = max(prob),
+    min_prob = round(min(prob),3),
+    max_prob = round(max(prob),3),
     cnt = length(Target),
     cnt_resp = sum(Target),
     cnt_non_resp = sum(Target == 0)
   ) ,
   by = deciles][order(-deciles)]
   rank$RRate <- rank$cnt_resp / rank$cnt ## computing response rate
+  rank$cum_tot <- cumsum(rank$cnt) ## computing cum total customers
   rank$cum_resp <- cumsum(rank$cnt_resp) ## computing cum responders
   rank$cum_non_resp <-
     cumsum(rank$cnt_non_resp) ## computing cum non-responders
+  rank$cum_RRate = rank$cum_resp / rank$cum_tot
   rank$cum_rel_resp <- rank$cum_resp / sum(rank$cnt_resp)
-
   rank$cum_rel_non_resp <- rank$cum_non_resp / sum(rank$cnt_non_resp)
-
   rank$ks <- rank$cum_rel_resp - rank$cum_rel_non_resp
-  ## KS
+  rank$lift <- round(rank$cum_RRate / Target_Rate,1)
+  rank$RRate<-percent( rank$RRate)
+  rank$cum_RRate<-percent( rank$cum_RRate)
+  rank$cum_rel_resp<-percent(rank$cum_rel_resp)
+  rank$cum_rel_non_resp<-percent(rank$cum_rel_non_resp)
+  rank$ks <- percent( rank$ks)
   rank ## display Rank Ordering Table
+
 }
 
 #' Ks statistics & ROC curve
