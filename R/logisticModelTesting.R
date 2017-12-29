@@ -155,7 +155,7 @@ ROTable <- function(df, target, probability)
 #' @return ROC curve and KS value
 #' @example exam_KS.R
 #' @export
-KS <- function(df, target, probability)
+KS_AUC <- function(df, target, probability)
 {
   mydata <- df[, c(target, probability)]
   colnames(mydata)[1] = "Target"
@@ -166,6 +166,10 @@ KS <- function(df, target, probability)
   plot(perf)
   ks <- max(attr(perf, 'y.values')[[1]] - attr(perf, 'x.values')[[1]])
   ks
+  auc <- performance(pred,"auc");
+  auc <- as.numeric(auc@y.values)
+  c("auc"= auc,"ks" = ks)
+
 }
 
 #' Chi Sq - Goodness of Fit
